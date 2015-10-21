@@ -10,4 +10,6 @@ After cloning or downloading a copy of the repository, the following steps are n
 4. If you want to be _really_ adventuresome and have a _fully customized_ Friedman formula calculation experience, you should also change the value of the "seed" variable.
 5. Run the file "demonstration.jl" using your Julia installation. The program is currently rather verbose even on the default settings, since it, like Julia, is still in alpha.
 
-I will be posting an explanation of the algorithm to arXiv shortly, and will update the repository with this information afterwards.
+There is a PDF file in the repository which explains the mathematical basis for the algorithm. (If anyone can help me find an endorser for the math-NT section of arXiv, please let me know.)
+
+If you have a computer which is fast enough and has enough memory, you could calculate a much larger database of profitable formulas with up to 6 digits. Of course, using such a database would be much more time consuming, but would probably enable calculating formulas for smaller targets.
