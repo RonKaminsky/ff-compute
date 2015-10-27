@@ -1,6 +1,6 @@
 # ff-compute
 
-This software is a proof-of-concept to demonstrate a practical algorithm for proving that large random numbers are Friedman numbers. It is written in Julia.
+This software is a proof-of-concept to demonstrate a practical algorithm for proving that large random numbers are [Friedman numbers](https://en.wikipedia.org/wiki/Friedman_number). It is written in Julia.
 
 After cloning or downloading a copy of the repository, the following steps are necessary in order to run the demonstration program, "demonstration.jl".
 
