@@ -27,6 +27,9 @@ srand(the_seed)
 quiet = false
 verbose = false
 timing = true
+logging = false
+
+logfile_name = "demonstration_output.log"
 
 profitable_db_digits_upper_bound = 200
 quotient_size_margin = 5
@@ -61,13 +64,20 @@ flush(STDOUT)
 
 attempts = 0
 successes = 0
+if logging
+   logging_fh = open(logfile_name, "w")
+end
 while true
    target = big_rand.rand_of_n_digits(target_digits)
    let ofh = open("current_target.rpn", "w")
       @printf(ofh, "%s\n", rpn.to_rpn(target))
       close(ofh)
    end
-      
+   if logging
+      @printf(logging_fh, "%s\n", string(target))
+      flush(logging_fh)
+   end
+
    if timing
       tic()
    end
@@ -150,15 +160,27 @@ while true
    end
    if ff_digits.total_discrepancy(target_digit_hist, ff_digits.digit_hist(the_final_formula)) > 0
       println("Formula calculation failed!")
+      if logging
+         @printf(logging_fh, "%s\n", "Failed")
+         flush(logging_fh)
+      end
    else
       # final check
       if big_eval.eval(the_final_formula) == target
          successes += 1
+         if logging
+            @printf(logging_fh, "%s\n", string(the_final_formula))
+            flush(logging_fh)
+         end
       else
          show(target)
          println()
          show(the_final_formula)
          println()
+         if logging
+            @printf(logging_fh, "%s\n", "Failed")
+            flush(logging_fh)
+         end
          error("Formula value discrepancy!")
       end
    end
