@@ -60,7 +60,8 @@ if timing
 end
 flush(STDOUT)
 
-# rpsr = "recursive product-sum representation"
+# rpsr = "{recursive,repeated} product-sum representation"
+# rpn = "Reverse Polish notation"
 
 attempts = 0
 successes = 0
