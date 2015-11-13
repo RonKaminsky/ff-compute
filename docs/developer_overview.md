@@ -1,3 +1,5 @@
+# Developer Overview
+
 The demonstration.jl script initializes various variables and then reads the formula database. It then enters an infinite loop which repeatedly generates a large random number (the "target number") with "target_digits" digits and tries to generate a Friedman formula for it.
 
 * The Friedman formula generation algorithm consists of up to three stages.
