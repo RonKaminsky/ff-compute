@@ -202,7 +202,7 @@ function cleanup_rpsr_via_sum(the_target, the_rpsr, candidate_cutoff)
                            other_value,
                            the_formula.expression)
          end
-         if the_formula.value < current_target
+         if the_formula.value > current_target
             # case 2
             other_value = the_formula.value - current_target
             merit = merit_fn(nothing, other_value, the_formula.expression)
