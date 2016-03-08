@@ -1,5 +1,7 @@
 #! /usr/bin/julia
 
+include("set_module_path.jl")
+
 profitable_db_filename = "data/profitable_formulas"
 target_digits = 800
 the_seed = 2718281828
@@ -53,12 +55,24 @@ flush(STDOUT)
 if timing
    tic()
 end
-profit_candidates = formula.read_formula_file(profitable_db_filename)
-println(string("Read all profitable formulas."))
-if timing
-   toc()
+
+for directory = ["."; dirname(@__FILE__); LOAD_PATH]
+   pdb_path = joinpath(directory, profitable_db_filename)
+   if isreadable(pdb_path)
+      pdb_file = open(pdb_path)
+      profit_candidates = formula.read_formula_file(pdb_file)
+      println(string("Read all profitable formulas."))
+      if timing
+         toc()
+      end
+      flush(STDOUT)
+      break
+   end
 end
-flush(STDOUT)
+
+if ! isdefined(:profit_candidates)
+   error("Failed to find profitable formula database!")
+end
 
 # rpsr = "{recursive,repeated} product-sum representation"
 # rpn = "Reverse Polish notation"

@@ -129,11 +129,15 @@ end
 
 # read formulas from a file
 function read_formula_file(filename::String)
+   ifh = open(filename)
+   return read_formula_file(ifh)
+end
+
+function read_formula_file(input_file::IOStream)
    notification_interval = 50000
    # dbg_bailout = 250000
    result = Formula[]
-   ifh = open(filename)
-   for (i, line) = enumerate(readlines(ifh))
+   for (i, line) = enumerate(readlines(input_file))
       new_expression = rpn.from_rpn(chomp(line))
       new_formula = Formula(new_expression,
                             big_eval.eval(new_expression))
