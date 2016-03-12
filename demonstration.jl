@@ -56,6 +56,7 @@ if timing
    tic()
 end
 
+profit_candidates = []
 for directory = ["."; dirname(@__FILE__); LOAD_PATH]
    pdb_path = joinpath(directory, profitable_db_filename)
    if isreadable(pdb_path)
