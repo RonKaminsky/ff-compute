@@ -84,7 +84,7 @@ function from_rpn(a::String)
          if in_integer
             stack[1] = stack[1] * 10 + my_int(string(c))
          else
-            stack = [big(my_int(string(c))); stack]
+            unshift!(stack, big(my_int(string(c))))
             in_integer = true
          end
       elseif c == ' '
@@ -93,17 +93,16 @@ function from_rpn(a::String)
          if length(stack) < 2
             error(string("Not enough arguments on stack: ", c))
          else
-            stack = [Expr(:call,
-                          inv_fn_tag[c],
-                          stack[1],
-                          stack[2]);
-                     stack[3 : end]]
+            splice!(stack, 1:2, [Expr(:call,
+                                      inv_fn_tag[c],
+                                      stack[1],
+                                      stack[2])])
          end
       elseif c == '!'
          if length(stack) < 1
             error(string("Not enough arguments on stack: ", c))
          else
-            stack = [Expr(:call, :-, stack[1]); stack[2 : end]]
+            stack[1] = Expr(:call, :-, stack[1])
          end
       else
          error(string("Unrecognized character: ", c))

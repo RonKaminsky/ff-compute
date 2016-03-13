@@ -17,8 +17,8 @@ end
 
 
 type Formula
-   expression
-   value
+   expression::Union{Expr, Int64, BigInt}
+   value::BigInt
    digits::Array{Int, 1}
 
    Formula(x) = new(x)
@@ -37,17 +37,33 @@ function trivial_formulas(n::Integer)
    result = Formula[]
    if n == 1
       for i = collect(0 : 9)
-         result = [result; Formula(i, big(i))]
+         push!(result, Formula(i, big(i)))
       end
    else
       for i = collect(10^(n - 1) : (10^n - 1))
-         result = [result; Formula(i, big(i))]
+         push!(result, Formula(i, big(i)))
       end
    end
    return result   
 end
 
-# size cutoff is in decimal digits
+# find_formulas(...) takes as input a sequence of sequences of formulas,
+# ordered on the outermost level by the number of digits used in the formulas
+# (starting at 1 digit formulas), and calculates a sequence of formulas which
+# have one additional digit whose formula values have not already been attained.
+# If result_callback is nothing, the sequence is returned, otherwise
+# result_callback should be a function which will be called with every generated
+# formula expression as its argument (useful for writing results directly to a file).
+#
+# Arguments:
+#   formulas_by_digits : the sequence of sequence of formulas
+#   size cutoff : maximum formula value (in number of decimal digits)
+#   hash_fn : hash function used for preventing repeated formula values#
+#   result_callback : if set to a function, it is called on every new expression
+#                     found before discarding the expression; otherwise, the
+#                     new expressions are collected into a sequence and returned.
+#                     Useful for writing results directly to a file.
+#
 function find_formulas(formulas_by_digits,
                        size_cutoff::Integer;
                        hash_fn = default_hash,
@@ -56,12 +72,12 @@ function find_formulas(formulas_by_digits,
 
    result = Formula[]
 
-   # initialize formula value set
+   # initialize formula value hash set
    hash_type = typeof(hash_fn(big(17)))
    value_hashes = Set{hash_type}()
    
    if n > 0
-      chunk_size = 10000
+      chunk_size = 100000
       for formula_array in formulas_by_digits
          println(string("Pushing into set: ", length(formula_array)))
          for i = collect(1 : chunk_size : length(formula_array))
@@ -81,26 +97,26 @@ function find_formulas(formulas_by_digits,
       # now calculate the formulas for n + 1 digits
       for i = collect(1 : div(n, 2))
          println(string("Calculating for: ", i, " vs. ", n + 1 - i))
-         result = [result; combine_formulas(formulas_by_digits[i],
-                                            formulas_by_digits[n + 1 - i],
-                                            size_cutoff,
-                                            value_hashes,
-                                            false,
-                                            hash_fn = hash_fn,
-                                            result_callback = result_callback)]
+         append!(result, combine_formulas(formulas_by_digits[i],
+                                          formulas_by_digits[n + 1 - i],
+                                          size_cutoff,
+                                          value_hashes,
+                                          false,
+                                          hash_fn = hash_fn,
+                                          result_callback = result_callback))
          println(string(" => ", length(value_hashes) - initial_set_length, " formulas"))
          initial_set_length = length(value_hashes)
       end
       if (n + 1) % 2 == 0
          halfway = div(n + 1, 2)
          println(string("Calculating for: ", halfway, " vs. ", halfway))
-         result = [result; combine_formulas(formulas_by_digits[halfway],
-                                            formulas_by_digits[halfway],
-                                            size_cutoff,
-                                            value_hashes,
-                                            true,
-                                            hash_fn = hash_fn,
-                                            result_callback = result_callback)]
+         append!(result, combine_formulas(formulas_by_digits[halfway],
+                                          formulas_by_digits[halfway],
+                                          size_cutoff,
+                                          value_hashes,
+                                          true,
+                                          hash_fn = hash_fn,
+                                          result_callback = result_callback))
          println(string(" => ", length(value_hashes) - initial_set_length, " formulas"))
       end
    end
@@ -173,6 +189,21 @@ function power_of_10(n::Integer)
    end
 end
 
+# combine_formulas(...) combines two sequences of formulas, producing all possible
+# expressions using one binary operation between elements.
+#
+#    formulas_1 : the first sequence
+#    formulas_2 : the second sequence
+#    size_cutoff : upper bound on number of digits of resulting formula value
+#    value_hashes : Set of hashes of already attained values
+#    identical_inputs : Bool, true if the two input sequences are identical
+#    hash_fn : the hash function to use on the values
+#    result_callback : if set to a function, it is called on every new expression
+#                      found before discarding the expression; otherwise, the
+#                      new expressions are collected into a sequence and returned.
+#                      Useful for writing results directly to a file.
+#    memory_cache_cutoff : currently unused.
+#
 function combine_formulas(formulas_1::Array{Formula, 1},
                           formulas_2::Array{Formula, 1},
                           size_cutoff::Int64,
@@ -213,7 +244,7 @@ function combine_formulas(formulas_1::Array{Formula, 1},
                if isa(result_callback, Function)
                   result_callback(new_formula)
                else
-                  result = [result; new_formula]
+                  push!(result, new_formula)
                end
                push!(value_hashes, new_value_hash)
                if (length(value_hashes) - initial_set_size) % notification_increment == 0
@@ -240,7 +271,7 @@ function combine_formulas(formulas_1::Array{Formula, 1},
             if isa(result_callback, Function)
                result_callback(new_formula)
             else
-               result = [result; new_formula]
+               push!(result, new_formula)
             end
             push!(value_hashes, new_value_hash)
             if (length(value_hashes) - initial_set_size) % notification_increment == 0
@@ -262,7 +293,7 @@ function combine_formulas(formulas_1::Array{Formula, 1},
                   if isa(result_callback, Function)
                      result_callback(new_formula)
                   else
-                     result = [result; new_formula]
+                     push!(result, new_formula)
                   end
                   
                   push!(value_hashes, new_value_hash)
@@ -287,7 +318,7 @@ function combine_formulas(formulas_1::Array{Formula, 1},
                   if isa(result_callback, Function)
                      result_callback(new_formula)
                   else
-                     result = [result; new_formula]
+                     push!(result, new_formula)
                   end
                   push!(value_hashes, new_value_hash)
                   if (length(value_hashes) - initial_set_size) % notification_increment == 0
@@ -314,7 +345,7 @@ function combine_formulas(formulas_1::Array{Formula, 1},
                         if isa(result_callback, Function)
                            result_callback(new_formula)
                         else
-                           result = [result; new_formula]
+                           push!(result, new_formula)
                         end
                         push!(value_hashes, new_value_hash)
                         if (length(value_hashes) - initial_set_size) % notification_increment == 0
@@ -328,7 +359,7 @@ function combine_formulas(formulas_1::Array{Formula, 1},
       end
    end
    if isa(result_callback, Function)
-      return nothing
+      return Formula[]
    else
       return result
    end
@@ -361,4 +392,4 @@ function canonize_expression(the_expression)
    end
 end
 
-end # module gen_formulas
+end # module formula
