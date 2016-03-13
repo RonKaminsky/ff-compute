@@ -71,7 +71,7 @@ for directory = ["."; dirname(@__FILE__); LOAD_PATH]
    end
 end
 
-if ! isdefined(:profit_candidates)
+if length(profit_candidates) == 0
    error("Failed to find profitable formula database!")
 end
 
