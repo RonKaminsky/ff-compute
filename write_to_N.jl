@@ -1,5 +1,7 @@
 #! /usr/bin/julia
 
+include("set_module_path.jl")
+
 using formula
 using rpn
 
